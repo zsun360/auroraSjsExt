@@ -1,5 +1,7 @@
 package org.aurora.sjsast.arnoldinterpreter
 
+import org.aurora.sjsast._
+
 
 object SimpleInterpreter :
 

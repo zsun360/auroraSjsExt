@@ -178,9 +178,9 @@ object PublishCommands:
             val currentPCM = parsed.asInstanceOf[GenAst.PCM]
             
             generateOrdersDSL(currentPCM).onComplete {
-              case Success(ordersDSL) if ordersDSL.nonEmpty =>
-                val beforeOrders = extractSectionBeforeOrders(currentContent)
-                replaceFileContent(s"$beforeOrders\n\n$ordersDSL")
+              case Success(fullContent) if fullContent.nonEmpty =>
+                // Replace the entire editor content with the modeled/merged result
+                replaceFileContent(fullContent)
               case Success(_) =>
                 vscode.window.showWarningMessage("No orders generated.")
               case Failure(e) =>

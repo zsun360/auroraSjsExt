@@ -46,6 +46,18 @@ object Show extends AutoDerivation[Show]:
     if (qurefs.qurc.isEmpty) "" 
     else "(" + qurefs.qurc.map(_.show).mkString(", ") + ")"
 
+  given Show[Value] = {
+    case IntValue(v)    => v.toString
+    case DoubleValue(v) => v.toString
+    case BoolValue(v)   => v.toString.toUpperCase
+    case StringValue(v) => v
+  }
+
+  given Show[SingleValueUnit] = svu => 
+    val neg = if (svu.negative) "(-)" else ""
+    val unitStr = if (svu.unit.isEmpty()) "_" else s" ${svu.unit}"
+    s"$neg${svu.value.show}$unitStr"
+
   // --- 2. Coordinates (Items) ---
   
   given Show[OrderCoordinate] = oc =>
@@ -54,9 +66,10 @@ object Show extends AutoDerivation[Show]:
     s"${oc.name}$refs$narr"
 
   given Show[IssueCoordinate] = ic =>
+    val fromPart = if (ic.fromMods.isEmpty) "" else s" from ${ic.fromMods.mkString(", ")}"
     val refs = if (ic.qurefs.isEmpty) "" else s" ${ic.qurefs.map(_.show).mkString(" ")}"
     val narr = if (ic.narratives.isEmpty) "" else s" ${ic.narratives.map(_.show).mkString(" ")}"
-    s"${ic.name}$refs$narr"
+    s"${ic.name}$fromPart$refs$narr"
 
   given Show[ClinicalCoordinate] = cc =>
     val refs = if (cc.qurefs.isEmpty) "" else 
@@ -64,6 +77,19 @@ object Show extends AutoDerivation[Show]:
       s" (${all.map(_.show).mkString(", ")})"
     val narr = if (cc.narratives.isEmpty) "" else s" ${cc.narratives.map(_.show).mkString(" ")}"
     s"${cc.name}$refs$narr"
+
+  given Show[ClinicalValue] = cv =>
+    val vals = if (cv.values.isEmpty) "" else s" [${cv.values.map(_.show).mkString(", ")}]"
+    val refs = if (cv.qurefs.isEmpty) "" else s" ${cv.qurefs.show}"
+    val narr = if (cv.narrative.isEmpty) "" else s" ${cv.narrative.map(_.show).mkString(" ")}"
+    s"${cv.name}$vals$refs$narr"
+
+  given Show[RefCoordinate] = {
+    case cc: ClinicalCoordinate => cc.show
+    case cv: ClinicalValue      => cv.show
+    case ic: IssueCoordinate    => ic.show
+    case oc: OrderCoordinate    => oc.show
+  }
 
   // --- 3. Groups ---
 
@@ -108,7 +134,13 @@ object Show extends AutoDerivation[Show]:
     s"module: ${m.name}\n\n$sections"
 
   given Show[PCM] = p =>
-    p.cio.values.map(_.show).mkString("\n\n")
+    // Enforce specific order of sections
+    val sectionOrder = List("Clinical", "Issues", "Orders")
+    
+    sectionOrder
+      .flatMap(key => p.cio.get(key))
+      .map(_.show)
+      .mkString("\n\n")
 
   // --- Magnolia Derivation Hooks (Fallback for unknown types) ---
   def join[T](ctx: CaseClass[Show, T]): Show[T] = t =>

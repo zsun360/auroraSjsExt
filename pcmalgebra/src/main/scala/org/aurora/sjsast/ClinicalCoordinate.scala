@@ -5,7 +5,7 @@ case class ClinicalCoordinate(
     narratives: LHSet[NL_STATEMENT] = LHSet(),
     qurefs: LHSet[QuReferences] = LHSet(),
     qu: QU = QU()
-)
+) extends RefCoordinate
 
 object ClinicalCoordinate:
     def apply(cc: GenAst.ClinicalCoordinate): ClinicalCoordinate = 
