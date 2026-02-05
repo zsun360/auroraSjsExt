@@ -6,7 +6,7 @@ case class OrderCoordinate(
     name: String,
     narratives: LHSet[NL_STATEMENT] = LHSet(),
     qurefs: LHSet[QuReferences] = LHSet()
-)
+) extends RefCoordinate
 
 object OrderCoordinate:
   def apply(oc: GenAst.OrderCoordinate): OrderCoordinate =

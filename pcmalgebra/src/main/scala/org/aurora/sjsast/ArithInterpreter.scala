@@ -17,8 +17,12 @@ class ArithInterpreter {
         case NumberLiteral(v) => v
 
         case BinaryExpression(left, op, right) =>
-        val l = eval(left, scope).asDouble
-        val r = eval(right, scope).asDouble
+        val l = eval(left, scope).asDouble.getOrElse(
+            throw new Exception(s"Left operand is not a number in expression: $expr")
+        )
+        val r = eval(right, scope).asDouble.getOrElse(
+            throw new Exception(s"Right operand is not a number in expression: $expr")
+        )
         
         val result = op match {
             case "+" => l + r
@@ -47,14 +51,3 @@ class ArithInterpreter {
         scope.getOrElse(name, throw new Exception(s"Variable $name not found"))
     }
 }
-
-sealed trait Value {
-  def asDouble: Double = this match {
-    case IntValue(v)    => v.toDouble
-    case DoubleValue(v) => v
-    case BoolValue(v)   => if (v) 1.0 else 0.0
-  }
-}
-case class IntValue(value: Int) extends Value
-case class BoolValue(value: Boolean) extends Value
-case class DoubleValue(value: Double) extends Value

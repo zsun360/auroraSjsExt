@@ -226,6 +226,7 @@ lazy val pcmalgebra = project
   .settings(
     name := "pcmalgebra",
     scalaVersion := DependencyVersions.scala,
+    scalacOptions ++= Seq("-Yretain-trees", "-Xmax-inlines", "60","-explain"),
     Test / resourceDirectory := baseDirectory.value / "src" / "test" / "resources",
     /* Configure Scala.js to emit modules in the optimal way to
      * connect to Vite's incremental reload.

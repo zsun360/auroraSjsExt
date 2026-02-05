@@ -27,9 +27,3 @@ case class LessThan(left: Expr, right: Expr) extends Expr
 // Represents an equality check
 case class EqualTo(left: Expr, right: Expr) extends Expr
 
-
-// 2. Define the possible output values of our interpreter
-sealed trait Value
-case class IntValue(value: Int) extends Value
-case class BoolValue(value: Boolean) extends Value
-

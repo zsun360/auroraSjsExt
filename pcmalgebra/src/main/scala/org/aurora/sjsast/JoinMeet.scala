@@ -34,6 +34,8 @@ object JoinMeet extends AutoDerivation[JoinMeet]:
   given JoinMeet[Int] = _ + _
   given JoinMeet[Boolean] = _ || _
 
+  given [T]: JoinMeet[List[T]] = (a, b) => (a ++ b).distinct
+
   // --- Collections ---
   given [T](using jm: JoinMeet[T]): JoinMeet[Option[T]] = 
     case (Some(a), Some(b)) => Some(jm.join(a, b))

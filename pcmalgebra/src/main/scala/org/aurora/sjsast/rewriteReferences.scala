@@ -17,52 +17,39 @@ object RewriteReferences:
         c.copy(ngc = newNamedGroups)
 
   private def addAliasToIssueCoord(ic: IssueCoordinate, alias: String, targets: Set[String]): IssueCoordinate =
-    val newRefs = LHSet(
-      ic.qurefs.toList.map(qurcs => transformQuReferences(qurcs, alias, targets))*
-    )
+    val newRefs = LHSet(ic.qurefs.toList.map(qurcs => transformQuReferences(qurcs, alias, targets))*)
     ic.copy(qurefs = newRefs)
 
   private def addAliasToNGO(ngo: NGO, alias: String, targets: Set[String]): NGO =
     val newOrders = ngo.ordercoord.map(oc => addAliasToOrderCoord(oc, alias, targets))
-    val newRefs = LHSet(
-      ngo.qurefs.toList.map(qurcs => transformQuReferences(qurcs, alias, targets))*
-    )
+    val newRefs = LHSet(ngo.qurefs.toList.map(qurcs => transformQuReferences(qurcs, alias, targets))*)
     ngo.copy(ordercoord = newOrders, qurefs = newRefs)
 
   private def addAliasToNGC(ngc: NGC, alias: String, targets: Set[String]): NGC =
-    val newCoords = ngc.coordinates.map(cc => addAliasToClinicalCoord(cc, alias, targets))
-    val newRefs = LHSet(
-      ngc.refs.toList.map(qurcs => transformQuReferences(qurcs, alias, targets))*
-    )
+    // Map over RefCoordinate and handle implementations polymorphically
+    val newCoords: LHSet[RefCoordinate] = ngc.coordinates.map {
+      case cc: ClinicalCoordinate => addAliasToClinicalCoord(cc, alias, targets)
+      case cv: ClinicalValue      => addAliasToClinicalValue(cv, alias, targets)
+      case other => other
+    }
+    val newRefs = LHSet(ngc.refs.toList.map(qurcs => transformQuReferences(qurcs, alias, targets))*)
     ngc.copy(coordinates = newCoords, refs = newRefs)
 
   private def addAliasToClinicalCoord(cc: ClinicalCoordinate, alias: String, targets: Set[String]): ClinicalCoordinate =
-    val newRefs = LHSet(
-      cc.qurefs.toList.map(qurcs => transformQuReferences(qurcs, alias, targets))*
-    )
+    val newRefs = LHSet(cc.qurefs.toList.map(qurcs => transformQuReferences(qurcs, alias, targets))*)
     cc.copy(qurefs = newRefs)
 
+  private def addAliasToClinicalValue(cv: ClinicalValue, alias: String, targets: Set[String]): ClinicalValue =
+    val newRefs = LHSet(cv.qurefs.toList.map(qurcs => transformQuReferences(qurcs, alias, targets))*)
+    cv.copy(qurefs = newRefs)
+
   private def addAliasToOrderCoord(oc: OrderCoordinate, alias: String, targets: Set[String]): OrderCoordinate =
-    val newRefs = LHSet(
-      oc.qurefs.toList.map(qurcs => transformQuReferences(qurcs, alias, targets))*
-    )
+    val newRefs = LHSet(oc.qurefs.toList.map(qurcs => transformQuReferences(qurcs, alias, targets))*)
     oc.copy(qurefs = newRefs)
 
-  // Shared function to transform QuReferences
   private def transformQuReferences(qurefs: QuReferences, alias: String, targets: Set[String]): QuReferences =
     val newRefs = qurefs.qurc.map { ref =>
-      val matchResult = findMatchingTarget(ref.refName, targets)
-      
-      matchResult match
-        case Some(matchedTarget) =>
-          // Keep the same QU, just replace the refName with alias
-          QuReference(refName = alias, qu = ref.qu)
-        case None =>
-          ref
+      if (targets.contains(ref.refName)) QuReference(refName = alias, qu = ref.qu)
+      else ref
     }
-    
     QuReferences(newRefs)
-
-  // Simplified: now we don't look for prefix in refName, it's in QU
-  private def findMatchingTarget(refName: String, targets: Set[String]): Option[String] =
-    if (targets.contains(refName)) Some(refName) else None

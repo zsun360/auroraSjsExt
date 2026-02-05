@@ -107,23 +107,22 @@ object MergePCM:
         val moduleNames = moduleImports.keySet
         val moduleURIs = getModuleURIs(currentPCM, moduleNames)
         
+        // 1. Convert local file to ProcessedPCM (IR)
+        val localPCM = ProcessedPCM(currentPCM)
+        
         parseModulesFromURIs(moduleURIs, moduleImports).map { modulePCMs =>
-            val validPCMs = modulePCMs.filter(_.cio.nonEmpty)
+            val localPCM = ProcessedPCM(currentPCM)
             
-            if (validPCMs.isEmpty) {
-                println("No valid ProcessedPCMs to merge")
-                ""
-            } else {
-                val mergedPCM = validPCMs.reduce(_ |+| _)                
-                mergedPCM.cio.get("Orders") match {
-                    case Some(orders) => 
-                        val result = orders.asInstanceOf[Orders].show
-                        result
-                    case None => 
-                        println("No Orders in merged ProcessedPCM")
-                        ""
-                }
-            }
+            // Merge only Clinical and Orders from modules, but keep local Issues
+            val mergedPCM = (localPCM :: modulePCMs).reduce(_ |+| _)
+            
+            // If you want to strictly keep ONLY local issues:
+            val finalPCM = mergedPCM.copy(
+                cio = mergedPCM.cio.updated("Issues", localPCM.cio("Issues"))
+            )
+
+            val modeledPCM = ParametricModeling.applyAgeConstraint(finalPCM)
+            modeledPCM.show
         }
     }
     

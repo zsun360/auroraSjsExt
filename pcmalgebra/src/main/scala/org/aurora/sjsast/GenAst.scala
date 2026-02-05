@@ -15,13 +15,13 @@ object GenAst :
   type ClinicalCoordinate           = GenAstMod.ClinicalCoordinate
   type ClinicalValue                = GenAstMod.ClinicalValue
   type ClinicalCoordinateValue      = GenAstMod.ClinicalCoordinate | GenAstMod.ClinicalValue
-  type RefCoordinateType            = GenAstMod.ReferenceCoordinate
+  type RefCoordinate                = GenAstMod.ReferenceCoordinate
   type QU                           = GenAstMod.QU
   type QuReference                  = GenAstMod.QuReference
   type QuReferences                 = GenAstMod.QuReferences
   type NL_STATEMENT                 = GenAstMod.NL_STATEMENT
   type LangiumReference[T]          = Reference[T]
-  
+  type SingleValueUnit              = GenAstMod.SingleValueUnit
   type Module                       = GenAstMod.MODULE
   
 
