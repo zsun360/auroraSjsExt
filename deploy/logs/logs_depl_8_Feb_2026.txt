@@ -1,0 +1,181 @@
+aurora_gcp_cloud@aurora-vscode:~$ docker ps
+CONTAINER ID   IMAGE                                 COMMAND                  CREATED        STATUS        PORTS                      NAMES
+19134dd2e5fa   sudojarvis/aurora-openvscode:latest   "/bin/sh -c 'exec ${…"   2 months ago   Up 2 months   127.0.0.1:3000->3000/tcp   aurora-ide
+aurora_gcp_cloud@aurora-vscode:~$ sudo nginx -T 2>/dev/null | grep -nE "server_name|listen 443|proxy_pass|aurora-upstream|upstream aurora_openvscode"
+23:	# server_names_hash_bucket_size 64;
+24:	# server_name_in_redirect off;
+200:    server_name playground.aurorac.ca;
+216:    listen 443 ssl http2;
+217:    server_name playground.aurorac.ca 34.45.36.25;
+231:        proxy_pass http://127.0.0.1:3000;
+251:    server_name _;
+258:        proxy_pass http://127.0.0.1:3000/;
+aurora_gcp_cloud@aurora-vscode:~$ sudo grep -Rsn "proxy_pass http://127.0.0.1:3000" /etc/nginx
+/etc/nginx/sites-available/default:13:        proxy_pass http://127.0.0.1:3000/;
+/etc/nginx/sites-available/aurora:36:        proxy_pass http://127.0.0.1:3000;
+/etc/nginx/sites-enabled/default:13:        proxy_pass http://127.0.0.1:3000/;
+/etc/nginx/sites-enabled/aurora:36:        proxy_pass http://127.0.0.1:3000;
+aurora_gcp_cloud@aurora-vscode:~$ sudo sh -c 'echo "=== aurora ==="; nl -ba /etc/nginx/sites-available/aurora | sed -n "1,140p"; echo "=== default ==="; nl -ba /etc/nginx/sites-available/default | sed -n "1,140p"'
+=== aurora ===
+     1	# /etc/nginx/sites-available/aurora
+     2	
+     3	server {
+     4	    listen 80;
+     5	    server_name playground.aurorac.ca;
+     6	
+     7	    #let’s Encrypt http-01 challenge (plain http)
+     8	    location ^~ /.well-known/acme-challenge/ {
+     9	        root /var/www/certbot;
+    10	        auth_basic off;
+    11	        try_files $uri =404;
+    12	    }
+    13	
+    14	    # everything else should be ssl
+    15	    location / {
+    16	        return 301 https://$host$request_uri;
+    17	    }
+    18	}
+    19	
+    20	server {
+    21	    listen 443 ssl http2;
+    22	    server_name playground.aurorac.ca 34.45.36.25;
+    23	
+    24	    # uncomment the below for self signed if needed
+    25	    ssl_certificate     /etc/ssl/certs/aurora-selfsigned.crt;
+    26	    ssl_certificate_key /etc/ssl/private/aurora-selfsigned.key;
+    27	
+    28	    # after ssl, above lines must be commented and the below ones uncommented
+    29	    ssl_certificate     /etc/letsencrypt/live/playground.aurorac.ca/fullchain.pem;
+    30	    ssl_certificate_key /etc/letsencrypt/live/playground.aurorac.ca/privkey.pem;
+    31	
+    32	    location / {
+    33	        auth_basic           "Aurora IDE";
+    34	        auth_basic_user_file /etc/nginx/.htpasswd;
+    35	
+    36	        proxy_pass http://127.0.0.1:3000;
+    37	        proxy_http_version 1.1;
+    38	
+    39	        proxy_set_header Host              $host;
+    40	        proxy_set_header X-Real-IP         $remote_addr;
+    41	        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    42	        proxy_set_header X-Forwarded-Proto $scheme;
+    43	
+    44	        proxy_set_header Upgrade    $http_upgrade;
+    45	        proxy_set_header Connection "upgrade";
+    46	    }
+    47	}
+    48	
+=== default ===
+     1	server {
+     2	    listen 80 default_server;
+     3	    listen [::]:80 default_server;
+     4	
+     5	    # no domain yet, to be updated adter getting domain name from management
+     6	    server_name _;
+     7	
+     8	    # basic auth 
+     9	    auth_basic "Aurora IDE";
+    10	    auth_basic_user_file /etc/nginx/.htpasswd;
+    11	
+    12	    location / {
+    13	        proxy_pass http://127.0.0.1:3000/;
+    14	
+    15	        proxy_set_header Host $host;
+    16	        proxy_set_header X-Real-IP $remote_addr;
+    17	        proxy_set_header Upgrade $http_upgrade;
+    18	        proxy_set_header Connection "upgrade";
+    19	        proxy_http_version 1.1;
+    20	    }
+    21	}
+    22	
+aurora_gcp_cloud@aurora-vscode:~$ 
+aurora_gcp_cloud@aurora-vscode:~$ sudo bash -c 'cat > /etc/nginx/conf.d/aurora-upstream.conf <<EOF
+upstream aurora_openvscode {
+    include /etc/nginx/conf.d/aurora-upstream.inc;
+    keepalive 64;
+}
+EOF
+echo "server 127.0.0.1:3000;" > /etc/nginx/conf.d/aurora-upstream.inc
+nginx -t'
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+aurora_gcp_cloud@aurora-vscode:~$ sudo bash -c '
+cp /etc/nginx/sites-available/aurora /etc/nginx/sites-available/aurora.bak.$(date +%Y%m%d-%H%M%S)
+cp /etc/nginx/sites-available/default /etc/nginx/sites-available/default.bak.$(date +%Y%m%d-%H%M%S)
+sed -i "s#proxy_pass http://127.0.0.1:3000/;#proxy_pass http://aurora_openvscode;#g; s#proxy_pass http://127.0.0.1:3000;#proxy_pass http://aurora_openvscode;#g" /etc/nginx/sites-available/aurora /etc/nginx/sites-available/default
+nginx -t
+'
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+aurora_gcp_cloud@aurora-vscode:~$ sudo systemctl reload nginx
+curl -I https://playground.aurorac.ca
+HTTP/2 401 
+server: nginx/1.18.0 (Ubuntu)
+date: Sun, 08 Feb 2026 17:20:25 GMT
+content-type: text/html
+content-length: 188
+www-authenticate: Basic realm="Aurora IDE"
+
+aurora_gcp_cloud@aurora-vscode:~$ docker p
+docker: unknown command: docker p
+
+Run 'docker --help' for more information
+aurora_gcp_cloud@aurora-vscode:~$ docker ps
+CONTAINER ID   IMAGE                                 COMMAND                  CREATED        STATUS        PORTS                      NAMES
+19134dd2e5fa   sudojarvis/aurora-openvscode:latest   "/bin/sh -c 'exec ${…"   2 months ago   Up 2 months   127.0.0.1:3000->3000/tcp   aurora-ide
+aurora_gcp_cloud@aurora-vscode:~$ docker pull sudojarvis/aurora-openvscode:20260208-165319
+docker run -d --name aurora-openvscode-blue --restart unless-stopped -p 127.0.0.1:18080:3000 sudojarvis/aurora-openvscode:20260208-165319
+docker ps --format '{{.Names}}\t{{.Image}}\t{{.Ports}}'
+20260208-165319: Pulling from sudojarvis/aurora-openvscode
+af6eca94c810: Already exists 
+a882c2cc2b34: Already exists 
+400b205135d1: Already exists 
+4f4fb700ef54: Already exists 
+8ac007da72f9: Already exists 
+9a5476a4cae1: Already exists 
+25cae4b29f25: Already exists 
+ae98ba07fdb8: Pull complete 
+8a59976599b7: Pull complete 
+fab3f6d9d053: Pull complete 
+7ef4921ad9a8: Pull complete 
+Digest: sha256:d16f5b8e3a0d55cf11afc1b91931c4604ca4cde815b12e9090cfa89eadb26483
+Status: Downloaded newer image for sudojarvis/aurora-openvscode:20260208-165319
+docker.io/sudojarvis/aurora-openvscode:20260208-165319
+4c5d1608493ce48cad0ac44d5724aff8777551cf6df822139bc7f3caa1d44a23
+aurora-openvscode-blue	sudojarvis/aurora-openvscode:20260208-165319	127.0.0.1:18080->3000/tcp
+aurora-ide	sudojarvis/aurora-openvscode:latest	127.0.0.1:3000->3000/tcp
+aurora_gcp_cloud@aurora-vscode:~$ docker p
+docker: unknown command: docker p
+
+Run 'docker --help' for more information
+aurora_gcp_cloud@aurora-vscode:~$ docker ps
+CONTAINER ID   IMAGE                                          COMMAND                  CREATED         STATUS         PORTS                       NAMES
+4c5d1608493c   sudojarvis/aurora-openvscode:20260208-165319   "/bin/sh -c 'exec ${…"   8 seconds ago   Up 6 seconds   127.0.0.1:18080->3000/tcp   aurora-openvscode-blue
+19134dd2e5fa   sudojarvis/aurora-openvscode:latest            "/bin/sh -c 'exec ${…"   2 months ago    Up 2 months    127.0.0.1:3000->3000/tcp    aurora-ide
+aurora_gcp_cloud@aurora-vscode:~$ curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:18080/
+200
+aurora_gcp_cloud@aurora-vscode:~$ echo "server 127.0.0.1:18080;" | sudo tee /etc/nginx/conf.d/aurora-upstream.inc >/dev/null
+sudo nginx -t && sudo systemctl reload nginx
+curl -I https://playground.aurorac.ca
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+HTTP/2 401 
+server: nginx/1.18.0 (Ubuntu)
+date: Sun, 08 Feb 2026 17:23:20 GMT
+content-type: text/html
+content-length: 188
+www-authenticate: Basic realm="Aurora IDE"
+
+aurora_gcp_cloud@aurora-vscode:~$ 
+aurora_gcp_cloud@aurora-vscode:~$ docker ps
+CONTAINER ID   IMAGE                                          COMMAND                  CREATED              STATUS              PORTS                       NAMES
+4c5d1608493c   sudojarvis/aurora-openvscode:20260208-165319   "/bin/sh -c 'exec ${…"   About a minute ago   Up About a minute   127.0.0.1:18080->3000/tcp   aurora-openvscode-blue
+19134dd2e5fa   sudojarvis/aurora-openvscode:latest            "/bin/sh -c 'exec ${…"   2 months ago         Up 2 months         127.0.0.1:3000->3000/tcp    aurora-ide
+aurora_gcp_cloud@aurora-vscode:~$ docker rm -f aurora-ide
+docker ps --format '{{.Names}}\t{{.Image}}\t{{.Ports}}'
+aurora-ide
+aurora-openvscode-blue	sudojarvis/aurora-openvscode:20260208-165319	127.0.0.1:18080->3000/tcp
+aurora_gcp_cloud@aurora-vscode:~$ docker ps
+CONTAINER ID   IMAGE                                          COMMAND                  CREATED         STATUS         PORTS                       NAMES
+4c5d1608493c   sudojarvis/aurora-openvscode:20260208-165319   "/bin/sh -c 'exec ${…"   9 minutes ago   Up 8 minutes   127.0.0.1:18080->3000/tcp   aurora-openvscode-blue
+aurora_gcp_cloud@aurora-vscode:~$ 

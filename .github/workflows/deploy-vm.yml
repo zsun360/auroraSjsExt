@@ -1,0 +1,98 @@
+name: Deploy To VM
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_ref:
+        description: Full image ref, for example sudojarvis/aurora-openvscode:sha-abc123
+        required: false
+        type: string
+      image_tag:
+        description: Image tag only, used when image_ref is empty
+        required: false
+        type: string
+  workflow_run:
+    workflows:
+      - Build And Push Image
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'deploy')
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare SSH key
+        id: ssh
+        env:
+          VM_SSH_KEY: ${{ secrets.VM_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          KEY_PATH="${RUNNER_TEMP}/vm_deploy_key"
+          printf '%s\n' "${VM_SSH_KEY}" > "${KEY_PATH}"
+          chmod 600 "${KEY_PATH}"
+          echo "key_path=${KEY_PATH}" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve image ref
+        id: image
+        env:
+          DOCKER_IMAGE_NAME: ${{ vars.DOCKER_IMAGE_NAME }}
+          INPUT_IMAGE_REF: ${{ github.event.inputs.image_ref }}
+          INPUT_IMAGE_TAG: ${{ github.event.inputs.image_tag }}
+          WORKFLOW_RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          IMAGE_NAME="${DOCKER_IMAGE_NAME:-sudojarvis/aurora-openvscode}"
+
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            if [[ -n "${INPUT_IMAGE_REF:-}" ]]; then
+              IMAGE_REF="${INPUT_IMAGE_REF}"
+            elif [[ -n "${INPUT_IMAGE_TAG:-}" ]]; then
+              IMAGE_REF="${IMAGE_NAME}:${INPUT_IMAGE_TAG}"
+            else
+              IMAGE_REF="${IMAGE_NAME}:sha-${GITHUB_SHA::12}"
+            fi
+          else
+            SHORT_SHA="$(echo "${WORKFLOW_RUN_SHA}" | cut -c1-12)"
+            IMAGE_REF="${IMAGE_NAME}:sha-${SHORT_SHA}"
+          fi
+
+          echo "image_ref=${IMAGE_REF}" >> "$GITHUB_OUTPUT"
+          echo "Resolved deploy image: ${IMAGE_REF}"
+
+      - name: Deploy on VM
+        env:
+          VM_HOST: ${{ secrets.VM_HOST }}
+          VM_USER: ${{ secrets.VM_USER }}
+          VM_PORT: ${{ secrets.VM_PORT }}
+          SSH_KEY_PATH: ${{ steps.ssh.outputs.key_path }}
+          REMOTE_DEPLOY_DIR: ${{ vars.REMOTE_DEPLOY_DIR }}
+          IMAGE_REF: ${{ steps.image.outputs.image_ref }}
+        run: |
+          set -euo pipefail
+          ./deploy/deploy-vm.sh
+
+      - name: Job summary
+        run: |
+          {
+            echo "### Deploy completed"
+            echo ""
+            echo "- Image ref: \`${{ steps.image.outputs.image_ref }}\`"
+            echo "- Trigger: \`${{ github.event_name }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

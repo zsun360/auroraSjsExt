@@ -1,0 +1,56 @@
+name: Rollback VM
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_ref:
+        description: Full image ref to rollback to, for example sudojarvis/aurora-openvscode:sha-abc123
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare SSH key
+        id: ssh
+        env:
+          VM_SSH_KEY: ${{ secrets.VM_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          KEY_PATH="${RUNNER_TEMP}/vm_deploy_key"
+          printf '%s\n' "${VM_SSH_KEY}" > "${KEY_PATH}"
+          chmod 600 "${KEY_PATH}"
+          echo "key_path=${KEY_PATH}" >> "$GITHUB_OUTPUT"
+
+      - name: Run rollback deploy on VM
+        env:
+          VM_HOST: ${{ secrets.VM_HOST }}
+          VM_USER: ${{ secrets.VM_USER }}
+          VM_PORT: ${{ secrets.VM_PORT }}
+          SSH_KEY_PATH: ${{ steps.ssh.outputs.key_path }}
+          REMOTE_DEPLOY_DIR: ${{ vars.REMOTE_DEPLOY_DIR }}
+          IMAGE_REF: ${{ github.event.inputs.image_ref }}
+        run: |
+          set -euo pipefail
+          ./deploy/deploy-vm.sh
+
+      - name: Job summary
+        run: |
+          {
+            echo "### Rollback completed"
+            echo ""
+            echo "- Image ref: \`${{ github.event.inputs.image_ref }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

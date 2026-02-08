@@ -1,0 +1,2 @@
+# Initial active backend. Blue = 18080, Green = 18081 (3000 was ehat the container was  already running on)
+server 127.0.0.1:18080;

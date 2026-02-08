@@ -1,0 +1,90 @@
+name: Build And Push Image
+
+on:
+  push:
+    branches:
+      - deploy
+  workflow_dispatch:
+    inputs:
+      vsix_path:
+        description: Optional VSIX path relative to repo root
+        required: false
+        type: string
+      push_latest:
+        description: Also update latest tag
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-and-push-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    outputs:
+      image_name: ${{ steps.meta.outputs.image_name }}
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+      image_ref: ${{ steps.meta.outputs.image_ref }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve image metadata
+        id: meta
+        env:
+          IMAGE_NAME_INPUT: ${{ vars.DOCKER_IMAGE_NAME }}
+        run: |
+          set -euo pipefail
+          IMAGE_NAME="${IMAGE_NAME_INPUT:-sudojarvis/aurora-openvscode}"
+          IMAGE_TAG="sha-${GITHUB_SHA::12}"
+          IMAGE_REF="${IMAGE_NAME}:${IMAGE_TAG}"
+
+          {
+            echo "image_name=${IMAGE_NAME}"
+            echo "image_tag=${IMAGE_TAG}"
+            echo "image_ref=${IMAGE_REF}"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Resolved image ref: ${IMAGE_REF}"
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push image
+        env:
+          IMAGE_NAME: ${{ steps.meta.outputs.image_name }}
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+          VSIX_PATH_INPUT: ${{ github.event.inputs.vsix_path }}
+          PUSH_LATEST_INPUT: ${{ github.event.inputs.push_latest }}
+        run: |
+          set -euo pipefail
+
+          PUSH_LATEST=1
+          if [[ "${PUSH_LATEST_INPUT:-}" == "false" ]]; then
+            PUSH_LATEST=0
+          fi
+
+          if [[ -n "${VSIX_PATH_INPUT:-}" ]]; then
+            PUSH_LATEST="${PUSH_LATEST}" ./deploy/build-and-push.sh "${VSIX_PATH_INPUT}"
+          else
+            PUSH_LATEST="${PUSH_LATEST}" ./deploy/build-and-push.sh
+          fi
+
+      - name: Job summary
+        run: |
+          {
+            echo "### Build completed"
+            echo ""
+            echo "- Image ref: \`${{ steps.meta.outputs.image_ref }}\`"
+            echo "- Branch: \`${{ github.ref_name }}\`"
+            echo "- Commit: \`${{ github.sha }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
