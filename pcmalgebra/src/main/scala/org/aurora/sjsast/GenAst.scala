@@ -23,5 +23,5 @@ object GenAst :
   type LangiumReference[T]          = Reference[T]
   type SingleValueUnit              = GenAstMod.SingleValueUnit
   type Module                       = GenAstMod.MODULE
-  
+  type ReferenceCoordinate          = GenAstMod.ReferenceCoordinate
 

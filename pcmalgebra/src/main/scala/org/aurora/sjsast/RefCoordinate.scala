@@ -1,26 +1,102 @@
 package org.aurora.sjsast
  
 import scala.scalajs.js
-import typings.auroraLangium.distTypesSrcLanguageGeneratedAstMod as GenAstMod
 
-trait RefCoordinate{
+sealed trait RefCoordinate{
     def name: String
 }
 
 object RefCoordinate:
-  type ClinicalCoordinateValue = GenAstMod.ClinicalCoordinate | GenAstMod.ClinicalValue
-
-  def apply(ast: GenAstMod.ReferenceCoordinate | GenAstMod.ClinicalValue): RefCoordinate =
+  def apply(ast: GenAst.ReferenceCoordinate | GenAst.ClinicalValue): RefCoordinate =
     val node = ast.asInstanceOf[js.Dynamic]
     node.`$type`.asInstanceOf[String] match {
       case "ClinicalCoordinate" => 
-        ClinicalCoordinate(ast.asInstanceOf[GenAstMod.ClinicalCoordinate])
+        ClinicalCoordinate(ast.asInstanceOf[GenAst.ClinicalCoordinate])
       case "IssueCoordinate"    => 
-        IssueCoordinate(ast.asInstanceOf[GenAstMod.IssueCoordinate])
+        IssueCoordinate(ast.asInstanceOf[GenAst.IssueCoordinate])
       case "OrderCoordinate"    => 
-        OrderCoordinate(ast.asInstanceOf[GenAstMod.OrderCoordinate])
+        OrderCoordinate(ast.asInstanceOf[GenAst.OrderCoordinate])
       case "ClinicalValue"      => 
-        ClinicalValue(ast.asInstanceOf[GenAstMod.ClinicalValue])
+        ClinicalValue(ast.asInstanceOf[GenAst.ClinicalValue])
       case unknown => 
         throw new Exception(s"Unsupported coordinate type: $unknown")
     }
+
+case class ClinicalCoordinate(
+  name: String,
+  narratives: LHSet[NL_STATEMENT] = LHSet(),
+  qurefs: LHSet[QuReferences] = LHSet(),
+  qu: QU = QU()
+) extends RefCoordinate
+
+object ClinicalCoordinate:
+  def apply(cc: GenAst.ClinicalCoordinate): ClinicalCoordinate = 
+    val name = cc.name
+    val narratives = LHSet(cc.narrative.toList.map(NL_STATEMENT(_))*)
+    val qurefs = LHSet(cc.qurc.toList.map(QuReferences(_))*)
+    val qu = QU(cc.qu)
+    ClinicalCoordinate(name, narratives, qurefs, qu)
+
+case class ClinicalValue(
+  name: String, 
+  values: List[SingleValueUnit] = List(), // Added to hold numeric data
+  narrative: LHSet[NL_STATEMENT] = LHSet(), 
+  qurefs: LHSet[QuReferences] = LHSet()
+) extends RefCoordinate
+
+object ClinicalValue:
+    def apply(ast: GenAst.ClinicalValue): ClinicalValue =
+      ClinicalValue(
+        name = ast.name,
+        // Convert js.Array to List and map using the SingleValueUnit companion
+        values = ast.values.toList.map(SingleValueUnit.apply),
+        
+        // Convert narrative using NL_STATEMENT IR (assuming its apply exists)
+        narrative = LHSet(ast.narrative.toList.map(NL_STATEMENT.apply)*),
+        
+        // Handle the optional QuReferences
+        qurefs = ast.qurc.toOption
+          .map(q => LHSet(QuReferences(q)))
+          .getOrElse(LHSet())
+      )
+
+case class IssueCoordinate(
+  name: String,
+  fromMods: List[String] = List(),
+  narratives: LHSet[NL_STATEMENT] = LHSet(),
+  qurefs: LHSet[QuReferences] = LHSet(),
+  qu: QU = QU()
+) extends RefCoordinate
+
+object IssueCoordinate:
+  def apply(ic: GenAst.IssueCoordinate): IssueCoordinate = 
+    val name = ic.name
+    val mods = ic.mods.toList.flatMap { m =>
+      val refText = m.asInstanceOf[js.Dynamic].selectDynamic("$refText")
+      if (refText != js.undefined) Some(refText.asInstanceOf[String]) else None
+    }
+    val narratives = LHSet(ic.narrative.toList.map(NL_STATEMENT(_))*)
+    val qurefs = LHSet(ic.qurc.toList.map(QuReferences(_))*)
+    val qu = QU(ic.qu)
+    IssueCoordinate(name, mods, narratives, qurefs, qu)
+
+case class OrderCoordinate(
+  name: String,
+  narratives: LHSet[NL_STATEMENT] = LHSet(),
+  qurefs: LHSet[QuReferences] = LHSet()
+) extends RefCoordinate
+
+object OrderCoordinate:
+  def apply(oc: GenAst.OrderCoordinate): OrderCoordinate =
+    val name = oc.name
+    val narratives = LHSet(oc.narrative.toList.map(NL_STATEMENT(_))*)
+    val refs = oc.qurc.toOption match {
+      case Some(qrs) => LHSet(QuReferences(qrs))
+      case None => LHSet()
+    }
+    
+    OrderCoordinate(
+      name = name, 
+      narratives = narratives, 
+      qurefs = refs
+    )

@@ -84,13 +84,6 @@ object Show extends AutoDerivation[Show]:
     val narr = if (cv.narrative.isEmpty) "" else s" ${cv.narrative.map(_.show).mkString(" ")}"
     s"${cv.name}$vals$refs$narr"
 
-  given Show[RefCoordinate] = {
-    case cc: ClinicalCoordinate => cc.show
-    case cv: ClinicalValue      => cv.show
-    case ic: IssueCoordinate    => ic.show
-    case oc: OrderCoordinate    => oc.show
-  }
-
   // --- 3. Groups ---
 
   given Show[NGO] = ngo =>
