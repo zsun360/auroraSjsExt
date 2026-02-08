@@ -1,8 +1,49 @@
 .vscode/**
 .vscode-test/**
 test/**
+.git/**
 .gitignore
+.env
+.vscodeignore
 vsc-extension-quickstart.md
 **/jsconfig.json
 **/*.map
 **/.eslintrc.json
+
+# Build/system
+.bloop/**
+.bsp/**
+.metals/**
+.idea/**
+*.iml
+build.sbt
+project/**
+target/**
+cleanStCache.ps1
+.sbtopts
+.scalafmt.conf
+lerna.json
+package-lock.json
+
+# Sources not needed at runtime
+axiompatienttracker/**
+axiombilling/**
+pcmalgebra/**
+shared/**
+src/**
+native/**
+
+# Audio backend: keep only packaged binary
+audiototext/**
+!audiototext/
+!audiototext/target/
+!audiototext/target/pack/
+!audiototext/target/pack/**
+
+# Runtime data: keep empty dir
+recordings/**
+!recordings/.gitkeep
+
+# Workspace symlinks inside node_modules
+node_modules/myform
+node_modules/billing
