@@ -15,7 +15,6 @@ object GenAst :
   type ClinicalCoordinate           = GenAstMod.ClinicalCoordinate
   type ClinicalValue                = GenAstMod.ClinicalValue
   type ClinicalCoordinateValue      = GenAstMod.ClinicalCoordinate | GenAstMod.ClinicalValue
-  type RefCoordinate                = GenAstMod.ReferenceCoordinate
   type QU                           = GenAstMod.QU
   type QuReference                  = GenAstMod.QuReference
   type QuReferences                 = GenAstMod.QuReferences
@@ -24,4 +23,6 @@ object GenAst :
   type SingleValueUnit              = GenAstMod.SingleValueUnit
   type Module                       = GenAstMod.MODULE
   type ReferenceCoordinate          = GenAstMod.ReferenceCoordinate
-
+  type ArithModule                  = GenAstMod.ArithModule
+  type Evaluation                   = GenAstMod.Evaluation
+  type Expression                   = GenAstMod.Expression
