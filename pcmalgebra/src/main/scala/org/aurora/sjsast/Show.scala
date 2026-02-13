@@ -15,6 +15,7 @@ object Show extends AutoDerivation[Show]:
   given Show[Int] = _.toString
   given Show[Boolean] = _.toString
   given Show[Char] = _.toString
+  given Show[Incomplete] = (_: Incomplete) => "???"
 
   given Show[QU] = qu => qu.query.mkString("")
 
@@ -51,6 +52,7 @@ object Show extends AutoDerivation[Show]:
     case DoubleValue(v) => v.toString
     case BoolValue(v)   => v.toString.toUpperCase
     case StringValue(v) => v
+    case IncompleteValue => Incomplete.show
   }
 
   given Show[SingleValueUnit] = svu => 
