@@ -1,5 +1,5 @@
 {
-  "name": "myform",
+  "name": "axiompatienttracker",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,10 +7,5 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview"
-  },
-  "devDependencies": {
-    "@scala-js/vite-plugin-scalajs": "^1.0.0",
-    "typescript": "^4.9.5",
-    "vite": "^4.1.0"
   }
 }
