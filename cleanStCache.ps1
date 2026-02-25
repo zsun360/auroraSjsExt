@@ -21,4 +21,6 @@ Remove-Item .\.bsp -Recurse
 Remove-Item .\project\.bloop -Recurse
 Remove-Item .\project\target -Recurse
 Remove-Item .\target -Recurse
+Remove-Item node_modules -Recurse -Force
+Remove-Item package-lock.json -Force
 

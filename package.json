@@ -165,8 +165,17 @@
 		"vite": "^4.1.0"
 	},
 	"dependencies": {
-		"aurora-langium": "^0.3.2",
+		"aurora-langium": "^0.3.3",
 		"d3": "^7.9.0",
 		"fs-extra": "^11.3.1"
-	}
+	},
+	"overrides": {
+        "@types/d3-selection": "3.0.3",
+        "@types/d3-transition": "3.0.2",
+        "@types/d3-dispatch": "3.0.1",
+        "@types/d3-drag": "3.0.1",
+        "@types/d3-zoom": "3.0.1",
+        "@types/d3-brush": "3.0.1",
+        "@types/d3-force": "3.0.3"
+    }
 }
