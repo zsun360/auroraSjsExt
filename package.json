@@ -13,12 +13,15 @@
 	"private": true,
 	"workspaces": [
 		"axiombilling",
-		"axiompatienttracker"
+		"axiompatienttracker",
+		"pcmalgebra",
+		"d3example"
 	],
 	"main": "./out/extension",
-  "scripts": {
-    "postinstall": "cd pcmalgebra && npm install"
-  },
+	"scripts": {
+		"build": "lerna run build",
+		"watch": "lerna run dev --parallel"
+	},
 	"contributes": {
 		"languages": [
 			{
@@ -152,12 +155,18 @@
 	},
 	"devDependencies": {
 		"@scala-js/vite-plugin-scalajs": "^1.0.0",
+		"@types/d3": "^7.4.3",
+		"@types/node": "^20.0.0",
+		"@types/vscode": "^1.94.0",
+		"@types/fs-extra": "^11.0.4",
+		"@types/vscode-webview": "^1.57.0",
 		"lerna": "^8.2.3",
-		"typescript": "^5.6.3"
+		"typescript": "^5.6.3",
+		"vite": "^4.1.0"
 	},
 	"dependencies": {
-		"@types/vscode": "^1.94.0",
-		"@types/vscode-webview": "^1.57.0",
-		"aurora-langium": "0.2.29"
+		"aurora-langium": "^0.3.2",
+		"d3": "^7.9.0",
+		"fs-extra": "^11.3.1"
 	}
 }
