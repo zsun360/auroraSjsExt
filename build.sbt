@@ -1,5 +1,8 @@
 import scala.sys.process._
 import org.scalajs.linker.interface.{ModuleSplitStyle, ModuleKind}
+import java.nio.file.{Files, Path, LinkOption}
+import java.nio.file.attribute.BasicFileAttributes
+import java.io.IOException
 
 // Common Settings
 ThisBuild / organization := "com.axiom"
@@ -282,3 +285,90 @@ lazy val d3example = project
     )
   )
   .settings(sharedStSettings)
+
+// ---- Custom Command to Clean build directories and StCache ----
+
+// Pure Scala recursion that strictly checks for Windows junctions and symlinks
+def safeDeleteNodeModules(dir: Path, log: sbt.internal.util.ManagedLogger): Unit = {
+  if (!Files.exists(dir, LinkOption.NOFOLLOW_LINKS)) return
+
+  // Read file attributes without following links
+  val attrs = try {
+    Files.readAttributes(dir, classOf[BasicFileAttributes], LinkOption.NOFOLLOW_LINKS)
+  } catch {
+    case _: IOException => return
+  }
+
+  // A real directory is a directory that is NOT a symlink and NOT a junction ("isOther" catches Windows junctions)
+  val isRealDirectory = attrs.isDirectory && !attrs.isSymbolicLink && !attrs.isOther
+
+  // If it is a real directory, step inside and delete its contents first
+  if (isRealDirectory) {
+    try {
+      val stream = Files.newDirectoryStream(dir)
+      try {
+        val iterator = stream.iterator()
+        while (iterator.hasNext) {
+          safeDeleteNodeModules(iterator.next(), log)
+        }
+      } finally {
+        stream.close()
+      }
+    } catch {
+      case _: IOException => log.warn(s"Could not read directory: ${dir.toAbsolutePath}")
+    }
+  }
+
+  // Delete the current path. If it is a junction or symlink, this safely deletes the shortcut itself.
+  try {
+    Files.deleteIfExists(dir)
+  } catch {
+    case _: IOException => log.warn(s"Skipping locked file/directory: ${dir.toAbsolutePath}")
+  }
+}
+
+lazy val cleanStCache = taskKey[Unit]("Cleans the ScalablyTyped cache and various build directories")
+
+cleanStCache := {
+  val log = streams.value.log
+  val baseDir = baseDirectory.value
+  val userHome = System.getProperty("user.home")
+
+  val ivyLocalPath = new File(userHome, ".ivy2/local/org.scalablytyped/aurora-langium_sjs1_3")
+
+  val pathsToDelete = Seq(
+    ivyLocalPath,
+    new File(baseDir, ".bloop"),
+    new File(baseDir, ".metals"),
+    new File(baseDir, ".bsp"),
+    new File(baseDir, "project/.bloop"),
+    new File(baseDir, "project/target"),
+    new File(baseDir, "target"),
+    new File(baseDir, "node_modules"),
+    new File(baseDir, "package-lock.json")
+  )
+  
+  // log.info(pathsToDelete.map(_.getAbsolutePath).mkString("Paths to delete:\n", "\n", "\n"))
+  log.info("Starting cleanup of cache and build directories...")
+
+  pathsToDelete.foreach { path =>
+    if (path.getName == "node_modules") {
+      if (Files.exists(path.toPath, LinkOption.NOFOLLOW_LINKS)) {
+        log.info(s"Safely deleting (ignoring symlink targets): ${path.getAbsolutePath}")
+        // Pass the NIO Path to our custom Scala function
+        safeDeleteNodeModules(path.toPath, log)
+      } else {
+        log.info(s"Skipping, not found: ${path.getAbsolutePath}")
+      }
+    } else {
+      if (path.exists()) {
+        log.info(s"Deleting: ${path.getAbsolutePath}")
+        sbt.io.IO.delete(path) 
+      } else {
+        log.info(s"Skipping, not found: ${path.getAbsolutePath}")
+      }
+    }
+  }
+
+  log.info("Cleanup completed successfully.")
+}
