@@ -17,6 +17,17 @@ enum Eye(val score: Int, val description: String) extends GcsComponent:
   case ToPain extends Eye(2, "eyes open to pain or pressure")
   case None extends Eye(1, "no eye opening")
 
+object Eye:
+  def findByScore(inputScore: Int): Option[Eye] =
+    var result: Option[Eye] = Option.empty
+
+    for eyeDescription <- Eye.values
+      if eyeDescription.score == inputScore
+      do result = Some(eyeDescription)
+    result
+
+
+
 
 enum Verbal(val score: Int, val description: String) extends GcsComponent:
   case Oriented extends Verbal(5, "oriented verbal response")
@@ -24,6 +35,15 @@ enum Verbal(val score: Int, val description: String) extends GcsComponent:
   case Words extends Verbal(3, "inappropriate words")
   case Sounds extends Verbal(2, "incomprehensible sounds")
   case None extends Verbal(1, "no verbal response")
+
+object Verbal:
+  def findByScore(inputScore: Int): Option[Verbal] =
+    var result: Option[Verbal] = Option.empty
+
+    for verbalDescription <- Verbal.values
+      if verbalDescription.score == inputScore
+      do result = Some(verbalDescription)
+    result
 
 
 enum Motor(val score: Int, val description: String) extends GcsComponent:
@@ -33,6 +53,15 @@ enum Motor(val score: Int, val description: String) extends GcsComponent:
   case AbnormalFlexion extends Motor(3, "abnormal flexion")
   case Extension extends Motor(2, "extension response")
   case None extends Motor(1, "no motor response")
+
+object Motor:
+  def findByScore(inputScore: Int): Option[Motor] =
+    var result: Option[Motor] = Option.empty
+
+    for motorDescription <- Motor.values
+      if motorDescription.score == inputScore
+      do result = Some(motorDescription)
+    result
 
 
 enum GcsSeverity(val outputValue: String):

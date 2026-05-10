@@ -31,5 +31,22 @@ class GcsEnumTest extends AnyWordSpec with Matchers:
       GcsStatus.NotTestable.outputValue shouldBe "not_testable"
       GcsTotalSource.Derived.outputValue shouldBe "derived"
     }
+
+    "find Eye condition by score" in {
+      Eye.findByScore(2) should be (Some(Eye.ToPain))
+      Eye.findByScore(10) should be (None)
+    }
+
+    "find Verbal condition by score" in {
+      Verbal.findByScore(3) should be (Some(Verbal.Words))
+      Verbal.findByScore(7) should be (None)
+    }
+
+    "find Motor condition by score" in {
+      Motor.findByScore(4) should be (Some(Motor.WithdrawsFromPain))
+      Motor.findByScore(10) should be (None)
+    }
+
+
   }
 
