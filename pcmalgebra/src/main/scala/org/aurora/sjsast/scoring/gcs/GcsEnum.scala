@@ -5,6 +5,15 @@ trait GcsComponent:
   def description: String
 
 
+private def findGcsComponentByScore[A <: GcsComponent](values: Array[A], inputScore: Int): Option[A] =
+  var result: Option[A] = Option.empty
+
+  for component <- values
+    if component.score == inputScore
+    do result = Some(component)
+  result
+
+
 enum ComponentResolution[+T]:
   case Missing
   case NotTestable
@@ -19,12 +28,7 @@ enum Eye(val score: Int, val description: String) extends GcsComponent:
 
 object Eye:
   def findByScore(inputScore: Int): Option[Eye] =
-    var result: Option[Eye] = Option.empty
-
-    for eyeDescription <- Eye.values
-      if eyeDescription.score == inputScore
-      do result = Some(eyeDescription)
-    result
+    findGcsComponentByScore(Eye.values, inputScore)
 
 
 
@@ -38,12 +42,7 @@ enum Verbal(val score: Int, val description: String) extends GcsComponent:
 
 object Verbal:
   def findByScore(inputScore: Int): Option[Verbal] =
-    var result: Option[Verbal] = Option.empty
-
-    for verbalDescription <- Verbal.values
-      if verbalDescription.score == inputScore
-      do result = Some(verbalDescription)
-    result
+    findGcsComponentByScore(Verbal.values, inputScore)
 
 
 enum Motor(val score: Int, val description: String) extends GcsComponent:
@@ -56,12 +55,7 @@ enum Motor(val score: Int, val description: String) extends GcsComponent:
 
 object Motor:
   def findByScore(inputScore: Int): Option[Motor] =
-    var result: Option[Motor] = Option.empty
-
-    for motorDescription <- Motor.values
-      if motorDescription.score == inputScore
-      do result = Some(motorDescription)
-    result
+    findGcsComponentByScore(Motor.values, inputScore)
 
 
 enum GcsSeverity(val outputValue: String):
