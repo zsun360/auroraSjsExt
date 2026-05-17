@@ -22,7 +22,22 @@ enum Cha2ds2VascRiskBand(val outputValue: String):
   case Intermediate extends Cha2ds2VascRiskBand("intermediate")
   case High extends Cha2ds2VascRiskBand("high")
 
+object Cha2ds2VascRiskBand:
+  def fromTotal(total: Int, sexCategory: SexCategory): Cha2ds2VascRiskBand =
+    require(total >= 0, "CHA2DS2-VASc total cannot be negative")
+
+    sexCategory match
+      case SexCategory.NotFemale =>
+        total match
+          case 0 => Cha2ds2VascRiskBand.Low
+          case 1 => Cha2ds2VascRiskBand.Intermediate
+          case _ => Cha2ds2VascRiskBand.High
+      case SexCategory.Female =>
+        total match
+          case 0 | 1 => Cha2ds2VascRiskBand.Low
+          case 2 => Cha2ds2VascRiskBand.Intermediate
+          case _ => Cha2ds2VascRiskBand.High
+
 
 enum Cha2ds2VascStatus(val outputValue: String):
   case InsufficientData extends Cha2ds2VascStatus("insufficient_data")
-

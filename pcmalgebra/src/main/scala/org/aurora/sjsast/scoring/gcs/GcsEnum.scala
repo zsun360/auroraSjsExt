@@ -30,9 +30,6 @@ object Eye:
   def findByScore(inputScore: Int): Option[Eye] =
     findGcsComponentByScore(Eye.values, inputScore)
 
-
-
-
 enum Verbal(val score: Int, val description: String) extends GcsComponent:
   case Oriented extends Verbal(5, "oriented verbal response")
   case Confused extends Verbal(4, "confused verbal response")
