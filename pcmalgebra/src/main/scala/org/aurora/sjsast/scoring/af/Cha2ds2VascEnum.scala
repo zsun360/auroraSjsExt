@@ -4,6 +4,11 @@ enum SexCategory(val points: Int, val description: String):
   case Female extends SexCategory(1, "female sex category")
   case NotFemale extends SexCategory(0, "not female sex category")
 
+  def riskFactor: Option[Cha2ds2VascRiskFactor] =
+    this match
+      case SexCategory.Female => Some(Cha2ds2VascRiskFactor.SexCategoryFemale)
+      case SexCategory.NotFemale => None
+
 
 enum Cha2ds2VascRiskFactor(val points: Int, val description: String):
   case CongestiveHeartFailure extends Cha2ds2VascRiskFactor(1, "congestive heart failure")
