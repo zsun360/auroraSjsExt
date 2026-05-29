@@ -61,4 +61,11 @@ class GcsEnumTest extends AnyWordSpec with Matchers:
       GcsSeverity.fromTotal(16).shouldBe(None)
     }
 
+    "parse GCS severity output values" in {
+    GcsSeverity.fromOutputValue("severe").shouldBe(Some(GcsSeverity.Severe))
+    GcsSeverity.fromOutputValue("MODERATE").shouldBe(Some(GcsSeverity.Moderate))
+    GcsSeverity.fromOutputValue("mild").shouldBe(Some(GcsSeverity.Mild))
+    GcsSeverity.fromOutputValue("unknown").shouldBe(None)
+  }
+
   }
