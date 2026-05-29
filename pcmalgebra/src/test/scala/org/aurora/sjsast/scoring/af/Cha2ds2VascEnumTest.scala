@@ -98,4 +98,10 @@ class Cha2ds2VascEnumTest extends AnyWordSpec with Matchers:
       Cha2ds2VascRiskBand.fromOutputValue("unknown").shouldBe(None)
     }
 
+    "parse CHA2DS2-VASc status output values" in {
+    Cha2ds2VascStatus.fromOutputValue("insufficient_data").shouldBe(Some(Cha2ds2VascStatus.InsufficientData))
+    Cha2ds2VascStatus.fromOutputValue("insufficient data").shouldBe(Some(Cha2ds2VascStatus.InsufficientData))
+    Cha2ds2VascStatus.fromOutputValue("unknown").shouldBe(None)
+  }
+
   }

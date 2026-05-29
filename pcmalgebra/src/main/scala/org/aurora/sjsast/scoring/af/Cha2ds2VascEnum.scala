@@ -83,3 +83,9 @@ object Cha2ds2VascRiskBand:
 
 enum Cha2ds2VascStatus(val outputValue: String):
   case InsufficientData extends Cha2ds2VascStatus("insufficient_data")
+
+object Cha2ds2VascStatus:
+  def fromOutputValue(input: String): Option[Cha2ds2VascStatus] =
+    input.trim.toLowerCase match
+      case "insufficient_data" | "insufficient data" => Some(Cha2ds2VascStatus.InsufficientData)
+      case _ => None  
