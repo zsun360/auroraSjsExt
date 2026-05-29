@@ -73,6 +73,13 @@ class Cha2ds2VascEnumTest extends AnyWordSpec with Matchers:
       SexCategory.NotFemale.riskFactor.shouldBe(None)
     }
 
-
+    "parse sex category inputs" in {
+      SexCategory.parse("female").shouldBe(Some(SexCategory.Female))
+      SexCategory.parse("F").shouldBe(Some(SexCategory.Female))
+      SexCategory.parse("male").shouldBe(Some(SexCategory.NotFemale))
+      SexCategory.parse("M").shouldBe(Some(SexCategory.NotFemale))
+      SexCategory.parse("not_female").shouldBe(Some(SexCategory.NotFemale))
+      SexCategory.parse("unknown").shouldBe(None)
+    }
 
   }

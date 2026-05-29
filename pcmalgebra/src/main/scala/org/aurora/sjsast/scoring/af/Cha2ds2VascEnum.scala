@@ -9,6 +9,13 @@ enum SexCategory(val points: Int, val description: String):
       case SexCategory.Female => Some(Cha2ds2VascRiskFactor.SexCategoryFemale)
       case SexCategory.NotFemale => None
 
+object SexCategory:
+  def parse(input: String): Option[SexCategory] =
+    input.trim.toLowerCase match
+      case "female" | "f" => Some(SexCategory.Female)
+      case "male" | "m" | "not female" | "not_female" => Some(SexCategory.NotFemale)
+      case _ => None  
+
 
 enum Cha2ds2VascRiskFactor(val points: Int, val description: String):
   case CongestiveHeartFailure extends Cha2ds2VascRiskFactor(1, "congestive heart failure")
