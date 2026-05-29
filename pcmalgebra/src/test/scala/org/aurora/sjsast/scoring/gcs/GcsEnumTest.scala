@@ -46,4 +46,19 @@ class GcsEnumTest extends AnyWordSpec with Matchers:
       Motor.findByScore(4).shouldBe(Some(Motor.WithdrawsFromPain))
       Motor.findByScore(10).shouldBe(None)
     }
+
+    "derive severity from a valid GCS total" in {
+      GcsSeverity.fromTotal(3).shouldBe(Some(GcsSeverity.Severe))
+      GcsSeverity.fromTotal(8).shouldBe(Some(GcsSeverity.Severe))
+      GcsSeverity.fromTotal(9).shouldBe(Some(GcsSeverity.Moderate))
+      GcsSeverity.fromTotal(12).shouldBe(Some(GcsSeverity.Moderate))
+      GcsSeverity.fromTotal(13).shouldBe(Some(GcsSeverity.Mild))
+      GcsSeverity.fromTotal(15).shouldBe(Some(GcsSeverity.Mild))
+    }
+
+    "reject invalid GCS totals when deriving severity" in {
+      GcsSeverity.fromTotal(2).shouldBe(None)
+      GcsSeverity.fromTotal(16).shouldBe(None)
+    }
+
   }

@@ -60,6 +60,13 @@ enum GcsSeverity(val outputValue: String):
   case Moderate extends GcsSeverity("moderate")
   case Mild extends GcsSeverity("mild")
 
+object GcsSeverity:
+  def fromTotal(total: Int): Option[GcsSeverity] =
+    if total < 3 || total > 15 then None
+    else if total <= 8 then Some(GcsSeverity.Severe)
+    else if total <= 12 then Some(GcsSeverity.Moderate)
+    else Some(GcsSeverity.Mild)
+
 
 enum GcsStatus(val outputValue: String):
   case NotTestable extends GcsStatus("not_testable")
