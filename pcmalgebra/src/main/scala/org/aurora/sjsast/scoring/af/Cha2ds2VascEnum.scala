@@ -35,6 +35,21 @@ object Cha2ds2VascRiskFactor:
     else if age >= 65 then Some(Cha2ds2VascRiskFactor.Age65To74)
     else None
 
+  def parse(input: String): Option[Cha2ds2VascRiskFactor] =
+  input.trim.toLowerCase.replace(" ", "_").replace("-", "_") match
+    case "congestive_heart_failure" | "heart_failure" | "chf" =>
+      Some(Cha2ds2VascRiskFactor.CongestiveHeartFailure)
+    case "hypertension" | "htn" =>
+      Some(Cha2ds2VascRiskFactor.Hypertension)
+    case "diabetes" | "diabetes_mellitus" | "dm" =>
+      Some(Cha2ds2VascRiskFactor.DiabetesMellitus)
+    case "prior_stroke" | "prior_tia" | "stroke" | "tia" | "thromboembolism" =>
+      Some(Cha2ds2VascRiskFactor.PriorStrokeTiaThromboembolism)
+    case "vascular_disease" | "cad" | "coronary_artery_disease" | "mi" | "pvd" =>
+      Some(Cha2ds2VascRiskFactor.VascularDisease)
+    case _ =>
+      None
+
 
 enum Cha2ds2VascRiskBand(val outputValue: String):
   case Low extends Cha2ds2VascRiskBand("low")

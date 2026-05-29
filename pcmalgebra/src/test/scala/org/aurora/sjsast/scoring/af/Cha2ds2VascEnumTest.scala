@@ -82,4 +82,13 @@ class Cha2ds2VascEnumTest extends AnyWordSpec with Matchers:
       SexCategory.parse("unknown").shouldBe(None)
     }
 
+    "parse CHA2DS2-VASc risk factor inputs" in {
+      Cha2ds2VascRiskFactor.parse("heart failure").shouldBe(Some(Cha2ds2VascRiskFactor.CongestiveHeartFailure))
+      Cha2ds2VascRiskFactor.parse("HTN").shouldBe(Some(Cha2ds2VascRiskFactor.Hypertension))
+      Cha2ds2VascRiskFactor.parse("diabetes_mellitus").shouldBe(Some(Cha2ds2VascRiskFactor.DiabetesMellitus))
+      Cha2ds2VascRiskFactor.parse("prior-stroke").shouldBe(Some(Cha2ds2VascRiskFactor.PriorStrokeTiaThromboembolism))
+      Cha2ds2VascRiskFactor.parse("coronary artery disease").shouldBe(Some(Cha2ds2VascRiskFactor.VascularDisease))
+      Cha2ds2VascRiskFactor.parse("unknown").shouldBe(None)
+    }
+
   }
