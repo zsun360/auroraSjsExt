@@ -57,4 +57,14 @@ class Cha2ds2VascEnumTest extends AnyWordSpec with Matchers:
         Cha2ds2VascRiskBand.fromTotal(-1, SexCategory.NotFemale)
       }
     }
+    "derive age risk factors from age" in {
+      Cha2ds2VascRiskFactor.fromAge(64).shouldBe(None)
+      Cha2ds2VascRiskFactor.fromAge(65).shouldBe(Some(Cha2ds2VascRiskFactor.Age65To74))
+      Cha2ds2VascRiskFactor.fromAge(74).shouldBe(Some(Cha2ds2VascRiskFactor.Age65To74))
+      Cha2ds2VascRiskFactor.fromAge(75).shouldBe(Some(Cha2ds2VascRiskFactor.Age75OrOlder))
+    }
+
+    "ignore negative ages when deriving an age risk factor" in {
+      Cha2ds2VascRiskFactor.fromAge(-1).shouldBe(None)
+    }
   }

@@ -16,6 +16,13 @@ enum Cha2ds2VascRiskFactor(val points: Int, val description: String):
   case Age65To74 extends Cha2ds2VascRiskFactor(1, "age 65 to 74 years")
   case SexCategoryFemale extends Cha2ds2VascRiskFactor(1, "female sex category")
 
+object Cha2ds2VascRiskFactor:
+  def fromAge(age: Int): Option[Cha2ds2VascRiskFactor] =
+    if age < 0 then None
+    else if age >= 75 then Some(Cha2ds2VascRiskFactor.Age75OrOlder)
+    else if age >= 65 then Some(Cha2ds2VascRiskFactor.Age65To74)
+    else None
+
 
 enum Cha2ds2VascRiskBand(val outputValue: String):
   case Low extends Cha2ds2VascRiskBand("low")
