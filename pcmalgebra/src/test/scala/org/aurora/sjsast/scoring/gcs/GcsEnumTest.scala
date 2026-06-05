@@ -64,6 +64,16 @@ class GcsEnumTest extends AnyWordSpec with Matchers:
       Motor.findByScore(10).shouldBe(None)
     }
 
+    "parse Motor component inputs" in {
+      Motor.parse("obeys commands").shouldBe(Some(Motor.ObeysCommands))
+      Motor.parse("LOCALIZES_PAIN").shouldBe(Some(Motor.LocalizesPain))
+      Motor.parse("withdraws").shouldBe(Some(Motor.WithdrawsFromPain))
+      Motor.parse("abnormal-flexion").shouldBe(Some(Motor.AbnormalFlexion))
+      Motor.parse("extension").shouldBe(Some(Motor.Extension))
+      Motor.parse("no_motor_response").shouldBe(Some(Motor.None))
+      Motor.parse("unknown").shouldBe(None)
+    }
+
     "derive severity from a valid GCS total" in {
       GcsSeverity.fromTotal(3).shouldBe(Some(GcsSeverity.Severe))
       GcsSeverity.fromTotal(8).shouldBe(Some(GcsSeverity.Severe))

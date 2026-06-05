@@ -75,6 +75,16 @@ object Motor:
   def findByScore(inputScore: Int): Option[Motor] =
     findGcsComponentByScore(Motor.values, inputScore)
 
+  def parse(input: String): Option[Motor] =
+    normalizeGcsParserInput(input) match
+      case "obeys_commands" | "obeys" => Some(Motor.ObeysCommands)
+      case "localizes_pain" | "localizes" => Some(Motor.LocalizesPain)
+      case "withdraws_from_pain" | "withdraws" => Some(Motor.WithdrawsFromPain)
+      case "abnormal_flexion" | "flexion" => Some(Motor.AbnormalFlexion)
+      case "extension" => Some(Motor.Extension)
+      case "none" | "no_motor_response" => Some(Motor.None)
+      case _ => Option.empty
+
 
 enum GcsSeverity(val outputValue: String):
   case Severe extends GcsSeverity("severe")
