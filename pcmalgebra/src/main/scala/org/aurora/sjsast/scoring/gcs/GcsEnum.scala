@@ -67,12 +67,12 @@ object GcsSeverity:
     else if total <= 12 then Some(GcsSeverity.Moderate)
     else Some(GcsSeverity.Mild)
 
-    def fromOutputValue(input: String): Option[GcsSeverity] =
+  def fromOutputValue(input: String): Option[GcsSeverity] =
     input.trim.toLowerCase match
       case "severe" => Some(GcsSeverity.Severe)
       case "moderate" => Some(GcsSeverity.Moderate)
       case "mild" => Some(GcsSeverity.Mild)
-      case _ => None  
+      case _ => None
 
 
 enum GcsStatus(val outputValue: String):

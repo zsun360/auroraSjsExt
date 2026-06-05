@@ -14,7 +14,7 @@ object SexCategory:
     input.trim.toLowerCase match
       case "female" | "f" => Some(SexCategory.Female)
       case "male" | "m" | "not female" | "not_female" => Some(SexCategory.NotFemale)
-      case _ => None  
+      case _ => None
 
 
 enum Cha2ds2VascRiskFactor(val points: Int, val description: String):
@@ -36,19 +36,19 @@ object Cha2ds2VascRiskFactor:
     else None
 
   def parse(input: String): Option[Cha2ds2VascRiskFactor] =
-  input.trim.toLowerCase.replace(" ", "_").replace("-", "_") match
-    case "congestive_heart_failure" | "heart_failure" | "chf" =>
-      Some(Cha2ds2VascRiskFactor.CongestiveHeartFailure)
-    case "hypertension" | "htn" =>
-      Some(Cha2ds2VascRiskFactor.Hypertension)
-    case "diabetes" | "diabetes_mellitus" | "dm" =>
-      Some(Cha2ds2VascRiskFactor.DiabetesMellitus)
-    case "prior_stroke" | "prior_tia" | "stroke" | "tia" | "thromboembolism" =>
-      Some(Cha2ds2VascRiskFactor.PriorStrokeTiaThromboembolism)
-    case "vascular_disease" | "cad" | "coronary_artery_disease" | "mi" | "pvd" =>
-      Some(Cha2ds2VascRiskFactor.VascularDisease)
-    case _ =>
-      None
+    input.trim.toLowerCase.replace(" ", "_").replace("-", "_") match
+      case "congestive_heart_failure" | "heart_failure" | "chf" =>
+        Some(Cha2ds2VascRiskFactor.CongestiveHeartFailure)
+      case "hypertension" | "htn" =>
+        Some(Cha2ds2VascRiskFactor.Hypertension)
+      case "diabetes" | "diabetes_mellitus" | "dm" =>
+        Some(Cha2ds2VascRiskFactor.DiabetesMellitus)
+      case "prior_stroke" | "prior_tia" | "stroke" | "tia" | "thromboembolism" =>
+        Some(Cha2ds2VascRiskFactor.PriorStrokeTiaThromboembolism)
+      case "vascular_disease" | "cad" | "coronary_artery_disease" | "mi" | "pvd" =>
+        Some(Cha2ds2VascRiskFactor.VascularDisease)
+      case _ =>
+        None
 
 
 enum Cha2ds2VascRiskBand(val outputValue: String):
@@ -73,12 +73,12 @@ object Cha2ds2VascRiskBand:
           case _ => Cha2ds2VascRiskBand.High
 
 
-    def fromOutputValue(input: String): Option[Cha2ds2VascRiskBand] =
+  def fromOutputValue(input: String): Option[Cha2ds2VascRiskBand] =
     input.trim.toLowerCase match
       case "low" => Some(Cha2ds2VascRiskBand.Low)
       case "intermediate" => Some(Cha2ds2VascRiskBand.Intermediate)
       case "high" => Some(Cha2ds2VascRiskBand.High)
-      case _ => None        
+      case _ => None
 
 
 enum Cha2ds2VascStatus(val outputValue: String):
@@ -88,4 +88,4 @@ object Cha2ds2VascStatus:
   def fromOutputValue(input: String): Option[Cha2ds2VascStatus] =
     input.trim.toLowerCase match
       case "insufficient_data" | "insufficient data" => Some(Cha2ds2VascStatus.InsufficientData)
-      case _ => None  
+      case _ => None
