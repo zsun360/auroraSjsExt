@@ -53,6 +53,15 @@ object Verbal:
   def findByScore(inputScore: Int): Option[Verbal] =
     findGcsComponentByScore(Verbal.values, inputScore)
 
+  def parse(input: String): Option[Verbal] =
+    normalizeGcsParserInput(input) match
+      case "oriented" => Some(Verbal.Oriented)
+      case "confused" => Some(Verbal.Confused)
+      case "words" | "inappropriate_words" => Some(Verbal.Words)
+      case "sounds" | "incomprehensible_sounds" => Some(Verbal.Sounds)
+      case "none" | "no_verbal_response" => Some(Verbal.None)
+      case _ => Option.empty
+
 
 enum Motor(val score: Int, val description: String) extends GcsComponent:
   case ObeysCommands extends Motor(6, "obeys commands")
