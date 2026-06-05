@@ -62,10 +62,17 @@ class GcsEnumTest extends AnyWordSpec with Matchers:
     }
 
     "parse GCS severity output values" in {
-    GcsSeverity.fromOutputValue("severe").shouldBe(Some(GcsSeverity.Severe))
-    GcsSeverity.fromOutputValue("MODERATE").shouldBe(Some(GcsSeverity.Moderate))
-    GcsSeverity.fromOutputValue("mild").shouldBe(Some(GcsSeverity.Mild))
-    GcsSeverity.fromOutputValue("unknown").shouldBe(None)
-  }
+      GcsSeverity.fromOutputValue("severe").shouldBe(Some(GcsSeverity.Severe))
+      GcsSeverity.fromOutputValue("MODERATE").shouldBe(Some(GcsSeverity.Moderate))
+      GcsSeverity.fromOutputValue("mild").shouldBe(Some(GcsSeverity.Mild))
+      GcsSeverity.fromOutputValue("unknown").shouldBe(None)
+    }
+
+    "parse GCS status output values" in {
+      GcsStatus.fromOutputValue("not_testable").shouldBe(Some(GcsStatus.NotTestable))
+      GcsStatus.fromOutputValue("not testable").shouldBe(Some(GcsStatus.NotTestable))
+      GcsStatus.fromOutputValue("INCOMPLETE").shouldBe(Some(GcsStatus.Incomplete))
+      GcsStatus.fromOutputValue("unknown").shouldBe(None)
+    }
 
   }

@@ -79,6 +79,13 @@ enum GcsStatus(val outputValue: String):
   case NotTestable extends GcsStatus("not_testable")
   case Incomplete extends GcsStatus("incomplete")
 
+object GcsStatus:
+  def fromOutputValue(input: String): Option[GcsStatus] =
+    input.trim.toLowerCase match
+      case "not_testable" | "not testable" => Some(GcsStatus.NotTestable)
+      case "incomplete" => Some(GcsStatus.Incomplete)
+      case _ => None
+
 
 enum GcsTotalSource(val outputValue: String):
   case Derived extends GcsTotalSource("derived")
