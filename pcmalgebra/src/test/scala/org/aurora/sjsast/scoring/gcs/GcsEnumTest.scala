@@ -75,4 +75,10 @@ class GcsEnumTest extends AnyWordSpec with Matchers:
       GcsStatus.fromOutputValue("unknown").shouldBe(None)
     }
 
+    "parse GCS total source output values" in {
+      GcsTotalSource.fromOutputValue("derived").shouldBe(Some(GcsTotalSource.Derived))
+      GcsTotalSource.fromOutputValue("MANUAL").shouldBe(Some(GcsTotalSource.Manual))
+      GcsTotalSource.fromOutputValue("unknown").shouldBe(None)
+    }
+
   }

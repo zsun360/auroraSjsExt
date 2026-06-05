@@ -90,3 +90,10 @@ object GcsStatus:
 enum GcsTotalSource(val outputValue: String):
   case Derived extends GcsTotalSource("derived")
   case Manual extends GcsTotalSource("manual")
+
+object GcsTotalSource:
+  def fromOutputValue(input: String): Option[GcsTotalSource] =
+    input.trim.toLowerCase match
+      case "derived" => Some(GcsTotalSource.Derived)
+      case "manual" => Some(GcsTotalSource.Manual)
+      case _ => None
