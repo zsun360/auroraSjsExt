@@ -37,6 +37,14 @@ class GcsEnumTest extends AnyWordSpec with Matchers:
       Eye.findByScore(10).shouldBe(None)
     }
 
+    "parse Eye component inputs" in {
+      Eye.parse("spontaneous").shouldBe(Some(Eye.Spontaneous))
+      Eye.parse("to voice").shouldBe(Some(Eye.ToVoice))
+      Eye.parse("TO_PAIN").shouldBe(Some(Eye.ToPain))
+      Eye.parse("no-eye-opening").shouldBe(Some(Eye.None))
+      Eye.parse("unknown").shouldBe(None)
+    }
+
     "find Verbal condition by score" in {
       Verbal.findByScore(3).shouldBe(Some(Verbal.Words))
       Verbal.findByScore(7).shouldBe(None)

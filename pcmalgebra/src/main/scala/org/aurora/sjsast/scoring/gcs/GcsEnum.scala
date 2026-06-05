@@ -14,6 +14,10 @@ private def findGcsComponentByScore[A <: GcsComponent](values: Array[A], inputSc
   result
 
 
+private def normalizeGcsParserInput(input: String): String =
+  input.trim.toLowerCase.replace(" ", "_").replace("-", "_")
+
+
 enum ComponentResolution[+T]:
   case Missing
   case NotTestable
@@ -29,6 +33,14 @@ enum Eye(val score: Int, val description: String) extends GcsComponent:
 object Eye:
   def findByScore(inputScore: Int): Option[Eye] =
     findGcsComponentByScore(Eye.values, inputScore)
+
+  def parse(input: String): Option[Eye] =
+    normalizeGcsParserInput(input) match
+      case "spontaneous" => Some(Eye.Spontaneous)
+      case "to_voice" | "voice" => Some(Eye.ToVoice)
+      case "to_pain" | "pain" => Some(Eye.ToPain)
+      case "none" | "no_eye_opening" => Some(Eye.None)
+      case _ => Option.empty
 
 enum Verbal(val score: Int, val description: String) extends GcsComponent:
   case Oriented extends Verbal(5, "oriented verbal response")
