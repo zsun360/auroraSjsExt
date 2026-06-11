@@ -24,6 +24,21 @@ enum ComponentResolution[+T]:
   case Resolved(value: T)
 
 
+private def resolveGcsComponentInput[A <: GcsComponent](
+    input: String,
+    findByScore: Int => Option[A],
+    parse: String => Option[A]
+): ComponentResolution[A] =
+  normalizeGcsParserInput(input) match
+    case "nt" | "not_testable" => ComponentResolution.NotTestable
+    case normalized =>
+      normalized.toIntOption
+        .flatMap(findByScore)
+        .orElse(parse(normalized))
+        .map(ComponentResolution.Resolved(_))
+        .getOrElse(ComponentResolution.Missing)
+
+
 enum Eye(val score: Int, val description: String) extends GcsComponent:
   case Spontaneous extends Eye(4, "eyes open spontaneously")
   case ToVoice extends Eye(3, "eyes open to voice or verbal command")
@@ -43,17 +58,7 @@ object Eye:
       case _ => Option.empty
 
   def resolveInput(input: String): ComponentResolution[Eye] =
-    normalizeGcsParserInput(input) match
-      case "nt" | "not_testable" => ComponentResolution.NotTestable
-      case normalized =>
-        val parsedComponent =
-          normalized.toIntOption
-            .flatMap(Eye.findByScore)
-            .orElse(Eye.parse(normalized))
-
-        parsedComponent
-          .map(ComponentResolution.Resolved(_))
-          .getOrElse(ComponentResolution.Missing)
+    resolveGcsComponentInput(input, Eye.findByScore, Eye.parse)
 
 enum Verbal(val score: Int, val description: String) extends GcsComponent:
   case Oriented extends Verbal(5, "oriented verbal response")
@@ -76,17 +81,7 @@ object Verbal:
       case _ => Option.empty
 
   def resolveInput(input: String): ComponentResolution[Verbal] =
-    normalizeGcsParserInput(input) match
-      case "nt" | "not_testable" => ComponentResolution.NotTestable
-      case normalized =>
-        val parsedComponent =
-          normalized.toIntOption
-            .flatMap(Verbal.findByScore)
-            .orElse(Verbal.parse(normalized))
-
-        parsedComponent
-          .map(ComponentResolution.Resolved(_))
-          .getOrElse(ComponentResolution.Missing)
+    resolveGcsComponentInput(input, Verbal.findByScore, Verbal.parse)
 
 
 enum Motor(val score: Int, val description: String) extends GcsComponent:
@@ -112,17 +107,7 @@ object Motor:
       case _ => Option.empty
 
   def resolveInput(input: String): ComponentResolution[Motor] =
-    normalizeGcsParserInput(input) match
-      case "nt" | "not_testable" => ComponentResolution.NotTestable
-      case normalized =>
-        val parsedComponent =
-          normalized.toIntOption
-            .flatMap(Motor.findByScore)
-            .orElse(Motor.parse(normalized))
-
-        parsedComponent
-          .map(ComponentResolution.Resolved(_))
-          .getOrElse(ComponentResolution.Missing)
+    resolveGcsComponentInput(input, Motor.findByScore, Motor.parse)
 
 
 enum GcsSeverity(val outputValue: String):
