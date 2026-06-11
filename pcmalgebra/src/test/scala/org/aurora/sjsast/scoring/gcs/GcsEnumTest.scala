@@ -68,6 +68,15 @@ class GcsEnumTest extends AnyWordSpec with Matchers:
       Verbal.parse("unknown").shouldBe(None)
     }
 
+    "resolve Verbal component inputs as typed component resolution" in {
+      Verbal.resolveInput("3").shouldBe(ComponentResolution.Resolved(Verbal.Words))
+      Verbal.resolveInput("confused").shouldBe(ComponentResolution.Resolved(Verbal.Confused))
+      Verbal.resolveInput("NT").shouldBe(ComponentResolution.NotTestable)
+      Verbal.resolveInput("not testable").shouldBe(ComponentResolution.NotTestable)
+      Verbal.resolveInput("7").shouldBe(ComponentResolution.Missing)
+      Verbal.resolveInput("unknown").shouldBe(ComponentResolution.Missing)
+    }
+
     "find Motor condition by score" in {
       Motor.findByScore(4).shouldBe(Some(Motor.WithdrawsFromPain))
       Motor.findByScore(10).shouldBe(None)

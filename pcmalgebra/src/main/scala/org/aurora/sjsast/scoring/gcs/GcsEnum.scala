@@ -75,6 +75,19 @@ object Verbal:
       case "none" | "no_verbal_response" => Some(Verbal.None)
       case _ => Option.empty
 
+  def resolveInput(input: String): ComponentResolution[Verbal] =
+    normalizeGcsParserInput(input) match
+      case "nt" | "not_testable" => ComponentResolution.NotTestable
+      case normalized =>
+        val parsedComponent =
+          normalized.toIntOption
+            .flatMap(Verbal.findByScore)
+            .orElse(Verbal.parse(normalized))
+
+        parsedComponent
+          .map(ComponentResolution.Resolved(_))
+          .getOrElse(ComponentResolution.Missing)
+
 
 enum Motor(val score: Int, val description: String) extends GcsComponent:
   case ObeysCommands extends Motor(6, "obeys commands")
