@@ -111,6 +111,19 @@ object Motor:
       case "none" | "no_motor_response" => Some(Motor.None)
       case _ => Option.empty
 
+  def resolveInput(input: String): ComponentResolution[Motor] =
+    normalizeGcsParserInput(input) match
+      case "nt" | "not_testable" => ComponentResolution.NotTestable
+      case normalized =>
+        val parsedComponent =
+          normalized.toIntOption
+            .flatMap(Motor.findByScore)
+            .orElse(Motor.parse(normalized))
+
+        parsedComponent
+          .map(ComponentResolution.Resolved(_))
+          .getOrElse(ComponentResolution.Missing)
+
 
 enum GcsSeverity(val outputValue: String):
   case Severe extends GcsSeverity("severe")
