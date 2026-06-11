@@ -76,19 +76,39 @@ class Cha2ds2VascEnumTest extends AnyWordSpec with Matchers:
     "parse sex category inputs" in {
       SexCategory.parse("female").shouldBe(Some(SexCategory.Female))
       SexCategory.parse("F").shouldBe(Some(SexCategory.Female))
+      SexCategory.parse("woman").shouldBe(Some(SexCategory.Female))
       SexCategory.parse("male").shouldBe(Some(SexCategory.NotFemale))
       SexCategory.parse("M").shouldBe(Some(SexCategory.NotFemale))
+      SexCategory.parse("man").shouldBe(Some(SexCategory.NotFemale))
       SexCategory.parse("not_female").shouldBe(Some(SexCategory.NotFemale))
       SexCategory.parse("unknown").shouldBe(None)
     }
 
     "parse CHA2DS2-VASc risk factor inputs" in {
       Cha2ds2VascRiskFactor.parse("heart failure").shouldBe(Some(Cha2ds2VascRiskFactor.CongestiveHeartFailure))
+      Cha2ds2VascRiskFactor.parse("HF").shouldBe(Some(Cha2ds2VascRiskFactor.CongestiveHeartFailure))
       Cha2ds2VascRiskFactor.parse("HTN").shouldBe(Some(Cha2ds2VascRiskFactor.Hypertension))
+      Cha2ds2VascRiskFactor.parse("age 75 or older").shouldBe(Some(Cha2ds2VascRiskFactor.Age75OrOlder))
       Cha2ds2VascRiskFactor.parse("diabetes_mellitus").shouldBe(Some(Cha2ds2VascRiskFactor.DiabetesMellitus))
       Cha2ds2VascRiskFactor.parse("prior-stroke").shouldBe(Some(Cha2ds2VascRiskFactor.PriorStrokeTiaThromboembolism))
+      Cha2ds2VascRiskFactor.parse("prior_stroke_tia_te").shouldBe(Some(Cha2ds2VascRiskFactor.PriorStrokeTiaThromboembolism))
       Cha2ds2VascRiskFactor.parse("coronary artery disease").shouldBe(Some(Cha2ds2VascRiskFactor.VascularDisease))
+      Cha2ds2VascRiskFactor.parse("myocardial infarction").shouldBe(Some(Cha2ds2VascRiskFactor.VascularDisease))
+      Cha2ds2VascRiskFactor.parse("age 65 to 74").shouldBe(Some(Cha2ds2VascRiskFactor.Age65To74))
+      Cha2ds2VascRiskFactor.parse("female sex category").shouldBe(Some(Cha2ds2VascRiskFactor.SexCategoryFemale))
       Cha2ds2VascRiskFactor.parse("unknown").shouldBe(None)
+    }
+
+    "sum typed CHA2DS2-VASc risk factor points once per factor" in {
+      val riskFactors = List(
+        Cha2ds2VascRiskFactor.Age75OrOlder,
+        Cha2ds2VascRiskFactor.Hypertension,
+        Cha2ds2VascRiskFactor.DiabetesMellitus,
+        Cha2ds2VascRiskFactor.Hypertension,
+        Cha2ds2VascRiskFactor.SexCategoryFemale
+      )
+
+      Cha2ds2VascRiskFactor.totalPoints(riskFactors).shouldBe(5)
     }
 
     "parse CHA2DS2-VASc risk band output values" in {
@@ -101,6 +121,7 @@ class Cha2ds2VascEnumTest extends AnyWordSpec with Matchers:
     "parse CHA2DS2-VASc status output values" in {
       Cha2ds2VascStatus.fromOutputValue("insufficient_data").shouldBe(Some(Cha2ds2VascStatus.InsufficientData))
       Cha2ds2VascStatus.fromOutputValue("insufficient data").shouldBe(Some(Cha2ds2VascStatus.InsufficientData))
+      Cha2ds2VascStatus.fromOutputValue("insufficient-data").shouldBe(Some(Cha2ds2VascStatus.InsufficientData))
       Cha2ds2VascStatus.fromOutputValue("unknown").shouldBe(None)
     }
 
