@@ -72,7 +72,6 @@ object Cha2ds2VascRiskBand:
           case 2 => Cha2ds2VascRiskBand.Intermediate
           case _ => Cha2ds2VascRiskBand.High
 
-
   def fromOutputValue(input: String): Option[Cha2ds2VascRiskBand] =
     input.trim.toLowerCase match
       case "low" => Some(Cha2ds2VascRiskBand.Low)
