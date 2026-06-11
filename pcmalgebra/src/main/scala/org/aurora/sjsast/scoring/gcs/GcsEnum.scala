@@ -42,6 +42,19 @@ object Eye:
       case "none" | "no_eye_opening" => Some(Eye.None)
       case _ => Option.empty
 
+  def resolveInput(input: String): ComponentResolution[Eye] =
+    normalizeGcsParserInput(input) match
+      case "nt" | "not_testable" => ComponentResolution.NotTestable
+      case normalized =>
+        val parsedComponent =
+          normalized.toIntOption
+            .flatMap(Eye.findByScore)
+            .orElse(Eye.parse(normalized))
+
+        parsedComponent
+          .map(ComponentResolution.Resolved(_))
+          .getOrElse(ComponentResolution.Missing)
+
 enum Verbal(val score: Int, val description: String) extends GcsComponent:
   case Oriented extends Verbal(5, "oriented verbal response")
   case Confused extends Verbal(4, "confused verbal response")

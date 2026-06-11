@@ -45,6 +45,15 @@ class GcsEnumTest extends AnyWordSpec with Matchers:
       Eye.parse("unknown").shouldBe(None)
     }
 
+    "resolve Eye component inputs as typed component resolution" in {
+      Eye.resolveInput("2").shouldBe(ComponentResolution.Resolved(Eye.ToPain))
+      Eye.resolveInput("to voice").shouldBe(ComponentResolution.Resolved(Eye.ToVoice))
+      Eye.resolveInput("NT").shouldBe(ComponentResolution.NotTestable)
+      Eye.resolveInput("not testable").shouldBe(ComponentResolution.NotTestable)
+      Eye.resolveInput("10").shouldBe(ComponentResolution.Missing)
+      Eye.resolveInput("unknown").shouldBe(ComponentResolution.Missing)
+    }
+
     "find Verbal condition by score" in {
       Verbal.findByScore(3).shouldBe(Some(Verbal.Words))
       Verbal.findByScore(7).shouldBe(None)
