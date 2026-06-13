@@ -192,8 +192,8 @@ lazy val axiombilling = project
   )
   .settings(sharedStSettings)
 
-// --- Shared Cross-Project (shared between frontend + backend) ---
-lazy val shared = crossProject(JSPlatform, JVMPlatform)
+// --- Shared Cross-Project ---
+lazy val shared = crossProject(JSPlatform)
   .in(file("shared"))
   .settings(
     libraryDependencies ++= Dependencies.borerJson.value,
@@ -202,9 +202,6 @@ lazy val shared = crossProject(JSPlatform, JVMPlatform)
     libraryDependencies ++= Seq(
       "dev.zio" %%% "zio-json" % DependencyVersions.zioJson, // ✅ ensure zio-json is available here
     )
-  )
-  .jvmSettings(
-    libraryDependencies += "org.scala-js" %% "scalajs-stubs" % DependencyVersions.scalaJsStubs
   )
 
 

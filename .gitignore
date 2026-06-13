@@ -20,5 +20,6 @@ media
 .env
 auroraFiles
 recordings
-resources
+#resources
+package-lock.json
 package-lock.json

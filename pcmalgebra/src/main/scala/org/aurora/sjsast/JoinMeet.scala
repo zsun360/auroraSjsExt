@@ -1,9 +1,10 @@
 package org.aurora.sjsast
 
 import magnolia1._
-
+//TODO: do we have testing for this anywhere? If not, add some tests for basic join behavior (e.g. merging two Clinical sections with overlapping coordinates)
 trait JoinMeet[T]:
   def join(a: T, b: T): T
+  //TODO: add meet (intersection) operation 
 
 object JoinMeet extends AutoDerivation[JoinMeet]:
 
@@ -12,6 +13,7 @@ object JoinMeet extends AutoDerivation[JoinMeet]:
 
   // --- Helpers for Merging Named Items ---
   // Merges two sets by name, recursively joining items with the same name
+  // TODO: I need the rationale for this utility function
   private def mergeNamedSets[T](a: LHSet[T], b: LHSet[T], getName: T => String)(using jm: JoinMeet[T]): LHSet[T] =
     val merged = LHMap[String, T]()
     a.foreach { item => merged(getName(item)) = item }
