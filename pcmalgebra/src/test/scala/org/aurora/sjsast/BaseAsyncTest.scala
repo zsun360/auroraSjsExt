@@ -30,8 +30,6 @@ class BaseAsyncTest extends wordspec.AsyncWordSpec with should.Matchers{
   private lazy val testPath = s"$testResourcesPath${fileutils.separator}$fullyQualifiedName"
 
 
-
-
   //info() wrapped in a future
   protected def finfo(output:String) =  Future(info(s"$output"))
 
@@ -40,11 +38,15 @@ class BaseAsyncTest extends wordspec.AsyncWordSpec with should.Matchers{
     createFileIfNotExists(path)
     path
 
+  def ftestfilepath(index:Int) = Future(testfilepath(index))  
+
 
   def testfiletext(index:Int) = 
     val path = testfilepath(index)
     createFileIfNotExists(path)
     fileutils.readFileSync(path)
+
+  def ftestfiletext(index:Int) = Future(testfiletext(index))  
 
   def parse(index:Int) = fileutils.parse(testfilepath(index)).toFuture.recover(
       {
@@ -55,6 +57,8 @@ class BaseAsyncTest extends wordspec.AsyncWordSpec with should.Matchers{
           // Handle other exceptions
           fail(s"Parse failed: ${ex.getMessage}")
       }
-    ) 
+    )
+
+  def ir(index:Int) = parse(index).map(PCM(_)) 
 
 }

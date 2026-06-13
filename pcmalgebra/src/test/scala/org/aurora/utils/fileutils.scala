@@ -41,8 +41,9 @@ object fileutils:
 
 
   def cwd = Process.cwd()
-  def testResourcesPath = cwd / "pcmalgebra" / "src" / "test" / "resources"
 
+  def testResourcesPath = cwd / "pcmalgebra" / "src" / "test" / "resources"
+  
   def readFileSync(path: String): String =
     fs.readFileSync(path, "utf-8")
   
@@ -54,7 +55,8 @@ object fileutils:
   def pathExists(path: String) =
     fsExtra.mod.pathExists(path)
 
+  def parse(filename:String)  = 
+    createFileIfNotExists(filename)
+    cliMod.parse(filename)
 
-
-  def parse(filename:String)  = cliMod.parse(filename)
 end fileutils
