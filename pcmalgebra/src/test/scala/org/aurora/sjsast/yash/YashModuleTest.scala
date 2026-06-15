@@ -7,7 +7,7 @@ class YashModuleTest extends BaseAsyncTest:
         "convert module to PCM with new alias" in {
             for {
             astPCM <- parse(0)
-            module <- Future(Module(astPCM))
+            module <- Future(Module(astPCM.get))
             modulePCM = ModulePCM(module)
 
             _ <- finfo(s"Original module: ${module.name}")
